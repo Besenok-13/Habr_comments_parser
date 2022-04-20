@@ -66,13 +66,14 @@ def parser(url: str):
             """
                 ООБНОВИТЬ ОТКЛОНЕНИЕ ВОЗМОЖЕН БАГ ПРИ ПЕРЕЗАПУСКЕ ЦИКЛА
             """
-            gen_tree(soup[0], 0)
+            if soup:
+                gen_tree(soup[0], 0)
             # soup = soup.find_all("div", {"xmlns": "http://www.w3.org/1999/xhtml"})
             # print(soup)
             return i
         return i
 
-    with open("parsed.txt", "w", encoding="utf-8") as out:
+    with open("parsed.txt", "a", encoding="utf-8") as out:
         links = without_post(url, headers)
         # for name in links:
         # f_obj.write(name.prettify())
