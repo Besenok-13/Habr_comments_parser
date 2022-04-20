@@ -1,69 +1,10 @@
 # coding=utf-8
-import re
-from calendar import c
-from urllib.parse import unquote
 
 import requests
 from bs4 import BeautifulSoup as bs
 from fake_useragent import UserAgent
-from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
-from webdriver_manager.firefox import GeckoDriverManager
-
-
-class GoogleSearch:
-    def __init__(self) -> None:
-        self._firefox_options = webdriver.FirefoxOptions()
-        self._firefox_options.add_argument("-headless")
-        self._firefox_options.add_argument(
-            "user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.88 Safari/537.36"
-        )
-
-        self._driver = driver = webdriver.Firefox(
-            executable_path=GeckoDriverManager().install()
-        )
-
-    def get_urls(self, q: str, start: int = 0):
-        """
-        Метод возвращает список url из Google запроса
-        :param q: Запрос
-               start: номер начальной страницы, начинается с 0
-        :return: Список собранных url
-        """
-
-        # base_url = "https://www.google.com/search?q={}&start={}".format(q, start)
-        base_url = q
-        try:
-            self._driver.get(base_url)
-        except Exception as e:
-            print(f"Ошибка {e} во время обработки")
-            return []
-
-        soup = bs(q, "lxml")
-        print(soup.find_all("div", {"class": "tm-comments__tree"}))
-        links = {}
-        for i in soup.find_all("div", {"class": "tm-comments__tree"}):
-            links.update({i.text: i.get("href")})
-        return links
-
-
-#        for link in soup.find_all("a"):
-#            try:
-#                g_link = link.get("href")
-#            except TypeError:
-#                continue
-
-#            if g_link and g_link.startswith("http") and "google" not in g_link:
-#                with_quest.append(unquote(g_link))
-
-#        return with_quest
-# adasd
-# adasad
-# asdadads
-
 
 i = 0
-otklon = 1
 
 
 def parser(url: str):
@@ -77,35 +18,29 @@ def parser(url: str):
             comm_text = j.find("div", {"class": "tm-comment__body-content"})
             if comm_text:
                 global i
-                global otklon
                 i += 1
-                comm_tag_to_wright = comm_text.find(
-                    "div", {"xmlns": "http://www.w3.org/1999/xhtml"}
-                )
+                now_i = i
+
+                # comm_tag_to_wright = comm_text.find(
+                #    "div", {"xmlns": "http://www.w3.org/1999/xhtml"}
+                # )
+
                 parent = current_pos
                 out.write(
                     str(i)
                     + "*__*-*__*"
-                    + comm_tag_to_wright.get_text().replace("\n", " ")
+                    + comm_text.get_text().replace("\n", " ")
                     + f" {parent}"
                     + "\n"
                 )
 
-                # print(str(i) + "*__*-*__*" + comm_tag.get_text())
-
                 childs = comm_tag.find_next_siblings(
                     "div", {"class": "tm-comment-thread__children"}
                 )
-                # print(childs)
 
                 if childs:
-                    # otklon = loc_otklon
-                    # сделать параметр с минусом
-                    # gen_tree(childs[0])
-                    otklon = 1
                     for child in childs:
-                        gen_tree(child, current_pos + otklon)
-                otklon += 1
+                        gen_tree(child, now_i)
 
     def find_comments_trees(url, headers):
         response = requests.get(url, headers=headers)
@@ -129,14 +64,13 @@ def parser(url: str):
             soup = soup.find_all("div", {"class": "tm-comments__tree"})
 
             """
-                ООБНОВИТЬ ОТКЛОНЕНИЕ ЛЯТЬ ПРИ ПЕРЕЗАПУСКЕ ЦИКЛА
+                ООБНОВИТЬ ОТКЛОНЕНИЕ ВОЗМОЖЕН БАГ ПРИ ПЕРЕЗАПУСКЕ ЦИКЛА
             """
             gen_tree(soup[0], 0)
-            otklon = 0
             # soup = soup.find_all("div", {"xmlns": "http://www.w3.org/1999/xhtml"})
             # print(soup)
-            return soup
-        return None
+            return i
+        return i
 
     with open("parsed.txt", "w", encoding="utf-8") as out:
         links = without_post(url, headers)
@@ -147,5 +81,6 @@ def parser(url: str):
 
 
 # Вставьте свой url
-url = "https://habr.com/ru/post/490820/comments/"
+url = "https://habr.com/ru/post/133473/comments/"
+# https://habr.com/ru/post/490820/comments/
 parser(url)
