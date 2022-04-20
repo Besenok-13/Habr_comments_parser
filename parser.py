@@ -56,69 +56,71 @@ class GoogleSearch:
 #                with_quest.append(unquote(g_link))
 
 #        return with_quest
+# adasd
+# adasad
+# asdadads
 
 
-def tri():
-    ua = UserAgent()
-    headers = {"accept": "*/*", "user-agent": ua.firefox}
-
-    def ap(obj, _class, _id=""):
-        links = []
-        for i in obj.find_all(_class, {"class": _id}):
-            links.append(i)
-        return links
-
-    def without_post(url, headers):
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            print(1)
-            soup = bs(response.text, "html5lib")
-            # print(soup.find_all("div", {"class": "tm-comments__tree"}))
-            links = []
-            for i in soup.find_all("section", {"class": "tm-comment-thread"}):
-                links.append(i)
-        else:
-            print("Connection Error")
-
-        ans = []
-        for i in range(len(links)):
-            links[i] = (
-                links[i].find_all("div", {"class": "tm-comment__body-content"})
-            ).strings
-
-        print(links[0])
-        # for i in range(len(links)):
-        #    links[i] = str(list(map(lambda x: x.find_all("p"), links[i])))
-        return links
-
-    url = "https://habr.com/ru/post/490820/comments/"
-    links = without_post(url, headers)
-    with open("parsed.txt", "w") as f_obj:
-        for name in links:
-            print(name)
-            f_obj.write(name + ":\n")
+i = 1
 
 
 def parser(url: str):
     ua = UserAgent()
     headers = {"accept": "*/*", "user-agent": ua.firefox}
 
-    def without_post(url, headers):
+    def gen_tree(soup):
+        soup1 = soup.contents
+        for j in soup1:
+            comm_tag = j.find("div", {"xmlns": "http://www.w3.org/1999/xhtml"})
+            if comm_tag:
+                global i
+                i += 1
+                out.write(
+                    str(i) + "*__*-*__*" + comm_tag.get_text().replace("\n", "") + "\n"
+                )
+
+                # print(str(i) + "*__*-*__*" + comm_tag.get_text())
+
+                childs = j.find_all("div", {"class": "tm-comment-thread__children"})
+
+                if childs:
+                    # сделать параметр с минусом
+                    gen_tree(childs[0])
+                    # for child in childs:
+                    #   gen_tree(child)
+
+    def find_comments_trees(url, headers):
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             print(1)
             soup = bs(response.text, "html5lib")
             # soup = soup.find_all("div", {"class": "tm-comment__body-content"})
-            soup = soup.find_all("div", {"xmlns": "http://www.w3.org/1999/xhtml"})
+            links = soup.find_all("section", {"class": "tm-comment-thread"})
             # print(soup)
-        return soup
+            for tree in links:
+                pass
+            return soup
+        print("FAIL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        return None
 
-    links = without_post(url, headers)
-    with open("parsed.txt", "w") as f_obj:
-        for name in links:
-            # f_obj.write(name.prettify())
-            f_obj.write(name.get_text())
-            f_obj.write("\n")
+    def without_post(url, headers):
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            print(1)
+            soup = bs(response.text, "html5lib")
+            soup = soup.find_all("div", {"class": "tm-comments__tree"})
+            gen_tree(soup[0])
+            # soup = soup.find_all("div", {"xmlns": "http://www.w3.org/1999/xhtml"})
+            # print(soup)
+            return soup
+        return None
+
+    with open("parsed.txt", "w", encoding="utf-8") as out:
+        links = without_post(url, headers)
+        # for name in links:
+        # f_obj.write(name.prettify())
+        #    out.write(name.get_text() + "\n")
+        # f_obj.write("\n")
 
 
 # Вставьте свой url
