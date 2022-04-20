@@ -81,6 +81,7 @@ def parser(url: str):
 
 
 # Вставьте свой url
-url = "https://habr.com/ru/post/133473/comments/"
-# https://habr.com/ru/post/490820/comments/
-parser(url)
+for k in range(1, 349900):
+    url = f"https://habr.com/ru/post/{k}/comments/"
+    # https://habr.com/ru/post/490820/comments/
+    parser(url)
