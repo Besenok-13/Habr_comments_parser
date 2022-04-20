@@ -28,9 +28,10 @@ def parser(url: str):
                 parent = current_pos
                 out.write(
                     str(i)
-                    + "*__*-*__*"
+                    + "*__*-*__*(-_-)"
                     + comm_text.get_text().replace("\n", " ")
-                    + f" {parent}"
+                    + "*__*-*__*(-_-)"
+                    + f"{parent}"
                     + "\n"
                 )
 
@@ -41,20 +42,6 @@ def parser(url: str):
                 if childs:
                     for child in childs:
                         gen_tree(child, now_i)
-
-    def find_comments_trees(url, headers):
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            print(1)
-            soup = bs(response.text, "html5lib")
-            # soup = soup.find_all("div", {"class": "tm-comment__body-content"})
-            links = soup.find_all("section", {"class": "tm-comment-thread"})
-            # print(soup)
-            for tree in links:
-                pass
-            return soup
-        print("FAIL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        return None
 
     def without_post(url, headers):
         response = requests.get(url, headers=headers)
@@ -70,7 +57,6 @@ def parser(url: str):
                 gen_tree(soup[0], 0)
             # soup = soup.find_all("div", {"xmlns": "http://www.w3.org/1999/xhtml"})
             # print(soup)
-            return i
         return i
 
     with open("parsed.txt", "a", encoding="utf-8") as out:
