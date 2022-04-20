@@ -1,5 +1,6 @@
 # coding=utf-8
 import re
+from calendar import c
 from urllib.parse import unquote
 
 import requests
@@ -61,33 +62,50 @@ class GoogleSearch:
 # asdadads
 
 
-i = 1
+i = 0
+otklon = 1
 
 
 def parser(url: str):
     ua = UserAgent()
     headers = {"accept": "*/*", "user-agent": ua.firefox}
 
-    def gen_tree(soup):
+    def gen_tree(soup, current_pos):
         soup1 = soup.contents
         for j in soup1:
-            comm_tag = j.find("div", {"xmlns": "http://www.w3.org/1999/xhtml"})
-            if comm_tag:
+            comm_tag = j.find("article", {"class": "tm-comment-thread__comment"})
+            comm_text = j.find("div", {"class": "tm-comment__body-content"})
+            if comm_text:
                 global i
+                global otklon
                 i += 1
+                comm_tag_to_wright = comm_text.find(
+                    "div", {"xmlns": "http://www.w3.org/1999/xhtml"}
+                )
+                parent = current_pos
                 out.write(
-                    str(i) + "*__*-*__*" + comm_tag.get_text().replace("\n", "") + "\n"
+                    str(i)
+                    + "*__*-*__*"
+                    + comm_tag_to_wright.get_text().replace("\n", " ")
+                    + f" {parent}"
+                    + "\n"
                 )
 
                 # print(str(i) + "*__*-*__*" + comm_tag.get_text())
 
-                childs = j.find_all("div", {"class": "tm-comment-thread__children"})
+                childs = comm_tag.find_next_siblings(
+                    "div", {"class": "tm-comment-thread__children"}
+                )
+                # print(childs)
 
                 if childs:
+                    # otklon = loc_otklon
                     # сделать параметр с минусом
-                    gen_tree(childs[0])
-                    # for child in childs:
-                    #   gen_tree(child)
+                    # gen_tree(childs[0])
+                    otklon = 1
+                    for child in childs:
+                        gen_tree(child, current_pos + otklon)
+                otklon += 1
 
     def find_comments_trees(url, headers):
         response = requests.get(url, headers=headers)
@@ -109,7 +127,12 @@ def parser(url: str):
             print(1)
             soup = bs(response.text, "html5lib")
             soup = soup.find_all("div", {"class": "tm-comments__tree"})
-            gen_tree(soup[0])
+
+            """
+                ООБНОВИТЬ ОТКЛОНЕНИЕ ЛЯТЬ ПРИ ПЕРЕЗАПУСКЕ ЦИКЛА
+            """
+            gen_tree(soup[0], 0)
+            otklon = 0
             # soup = soup.find_all("div", {"xmlns": "http://www.w3.org/1999/xhtml"})
             # print(soup)
             return soup
